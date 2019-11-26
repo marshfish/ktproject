@@ -1,4 +1,4 @@
-package com.mcode.ktproject.common
+package com.mcode.ktproject.common.codegen
 
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -192,11 +192,11 @@ class KtormGen {
 
     companion object {
         //生成文件所在包名
-        private const val PACKAGE = "com.mcode.ktproject.passport"
+        private const val PACKAGE = "com.mcode.ktproject.passport.dao"
         //数据库类型
         private val DB = DBType.Mysql
         //表名
-        private const val TABLE_NAME = "account_user"
+        private const val TABLE_NAME = "sys_user"
         //用户名
         private const val USER_NAME = "root"
         //密码
@@ -206,7 +206,7 @@ class KtormGen {
         //数据库IP、端口号、数据库名
         private const val IP = "localhost"
         private const val PORT = "3306"
-        private const val SELECT_DB = "hc_dev"
+        private const val SELECT_DB = "xtest"
 
         @JvmStatic
         fun main(args: Array<String>) {
