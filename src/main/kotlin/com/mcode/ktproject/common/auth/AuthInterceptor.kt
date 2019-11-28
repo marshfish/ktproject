@@ -1,9 +1,13 @@
 package com.mcode.ktproject.common.auth
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.mcode.ktproject.SPRING_CONTEXT
+import com.mcode.ktproject.common.Response
+import com.mcode.ktproject.passport.dto.Session
+import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.web.method.HandlerMethod
 import org.springframework.web.servlet.HandlerInterceptor
 import org.springframework.web.servlet.ModelAndView
-import java.lang.Exception
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -19,14 +23,30 @@ class AuthInterceptor : HandlerInterceptor {
         }
     }
 
-
     private fun doAuth(request: HttpServletRequest, response: HttpServletResponse, annotation: AuthValid): Boolean {
-        //do auth business
-        val token = request.getHeader("token") ?: return false
-
-        return true
+        @Suppress("UNCHECKED_CAST") val redisCli =
+                SPRING_CONTEXT.getBean(RedisTemplate::class.java) as RedisTemplate<String, String>
+        val permission = request.getHeader("token")
+                ?.run { redisCli.opsForValue().get(this) }
+                ?.run { ObjectMapper().readValue<Session>(this, Session::class.java) }
+                ?.permission ?: return authFail(response)
+        return annotation.value.intersect(setOf(permission)).count() > 0
     }
 
+
+    private fun authFail(response: HttpServletResponse): Boolean {
+        doResponse(response, 401, "illegal request")
+        return false
+    }
+
+    private fun doResponse(response: HttpServletResponse, code: Int, tip: String) {
+        response.run {
+            val res: String = ObjectMapper().writeValueAsString(Response.of(code, tip))
+            contentType = "application/json;charset=utf-8"
+            characterEncoding = "UTF-8"
+            writer.append(res).flush()
+        }
+    }
 
     override fun postHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any, modelAndView: ModelAndView?) {
         super.postHandle(request, response, handler, modelAndView)

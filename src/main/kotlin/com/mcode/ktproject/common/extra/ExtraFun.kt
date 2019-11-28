@@ -1,5 +1,6 @@
 package com.mcode.ktproject.common.extra
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 
@@ -7,7 +8,7 @@ fun String.encodeMD5(): String {
     return try {
         val instance: MessageDigest = MessageDigest.getInstance("MD5")
         val digest: ByteArray = instance.digest(this.toByteArray())
-        return  digest.map { moveBit(it) }.fold(StringBuilder(), StringBuilder::append).toString()
+        return digest.map { moveBit(it) }.fold(StringBuilder(), StringBuilder::append).toString()
     } catch (e: NoSuchAlgorithmException) {
         e.printStackTrace()
         ""
@@ -24,5 +25,9 @@ private fun moveBit(it: Byte): String? {
         hexString = "0$hexString"
     }
     return hexString
+}
+
+fun Any.toJson(): String {
+    return ObjectMapper().writeValueAsString(this)
 }
 

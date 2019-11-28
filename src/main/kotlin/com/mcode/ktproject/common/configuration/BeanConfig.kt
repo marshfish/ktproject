@@ -5,9 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import me.liuwj.ktorm.database.Database
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
 import java.util.*
 import javax.sql.DataSource
 
@@ -25,6 +22,7 @@ class BeanConfig {
 
     @Bean
     fun database(dataSource: DataSource): Database {
+
         return Database.connectWithSpringSupport(dataSource)
     }
 
