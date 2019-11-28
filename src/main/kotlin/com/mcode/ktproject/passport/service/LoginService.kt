@@ -5,7 +5,6 @@ import com.mcode.ktproject.common.extra.encodeMD5
 import com.mcode.ktproject.common.extra.querySql
 import com.mcode.ktproject.common.extra.toJson
 import com.mcode.ktproject.common.util.getKey
-import com.mcode.ktproject.common.util.query
 import com.mcode.ktproject.passport.dao.SysUser
 import com.mcode.ktproject.passport.dto.Login
 import com.mcode.ktproject.passport.dto.Session
