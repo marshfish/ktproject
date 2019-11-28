@@ -9,11 +9,10 @@ import org.springframework.context.event.ApplicationContextEvent
 @SpringBootApplication
 @Slf4j
 class KtprojectApplication
+
 class StartupEvent(source: ApplicationContext) : ApplicationContextEvent(source)
 
 fun main(args: Array<String>) {
-    runApplication<KtprojectApplication>(*args).use {
-        it.publishEvent(StartupEvent(it))
-    }
+    val context = runApplication<KtprojectApplication>(*args)
+    context.publishEvent(StartupEvent(context))
 }
-

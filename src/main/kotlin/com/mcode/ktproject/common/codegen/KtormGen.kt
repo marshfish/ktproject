@@ -39,7 +39,7 @@ class KtormGen {
 
     private data class Tuple<T1, T2> internal constructor(val t1: T1?, val t2: T2?)
 
-    private data class Tuple3<T1, T2, T3> internal constructor(val t1: T1?, val t2: T2?, val t3: T3?)
+    private data class FieldMetaData<T1, T2, T3> internal constructor(val columnName: T1?, val dataType: T2?, val comment: T3?)
 
 
     private enum class DBType constructor(val url: String, val driver: String, val tableDesc: String) {
@@ -57,15 +57,15 @@ class KtormGen {
                         "where table_name= '$TABLE_NAME' and TABLE_SCHEMA = '$SELECT_DB' ORDER BY ORDINAL_POSITION asc")
     }
 
-    private fun genFileContent(dbProperties: List<Tuple3<String, String, String>>): String {
+    private fun genFileContent(dbProperties: List<FieldMetaData<String, String, String>>): String {
         log.info("start generate table:$TABLE_NAME")
         val table = StringBuilder()
         val tableEntityName = genTableEntityName()
         val entity = StringBuilder("\ninterface $tableEntityName : Entity<$tableEntityName> {\n")
         dbProperties.forEach { tuple ->
-            val column = tuple.t1
-            val type = tuple.t2
-            val comment = tuple.t3
+            val column = tuple.columnName
+            val type = tuple.dataType
+            val comment = tuple.comment
             val ktField = toCamelCase(column)
             val typeTuple = mapperDataType(type)
             //构建表对象
@@ -83,11 +83,11 @@ class KtormGen {
         return genFileHeader(table).append("\n").append(entity.append("}")).toString()
     }
 
-    private fun genDbProperties(): List<Tuple3<String, String, String>> {
+    private fun genDbProperties(): List<FieldMetaData<String, String, String>> {
         try {
             Class.forName(DB.driver)
         } catch (e: ClassNotFoundException) {
-            e.printStackTrace()
+            log.error(e.message, e)
             exitProcess(0)
         }
         var conn: Connection? = null
@@ -96,17 +96,17 @@ class KtormGen {
             conn = DriverManager.getConnection(DB.url, USER_NAME, PASSWORD)
             stat = conn.prepareStatement(DB.tableDesc)
             val resultSet = stat.executeQuery()
-            val list = ArrayList<Tuple3<String, String, String>>()
+            val list = ArrayList<FieldMetaData<String, String, String>>()
             while (resultSet.next()) {
                 val columnName = resultSet.getString(1)
                 val dataType = resultSet.getString(2)
                 val comment = resultSet.getString(3)
-                list.add(Tuple3(columnName, dataType, comment))
+                list.add(FieldMetaData(columnName, dataType, comment))
             }
             list
         } catch (e: Exception) {
-            e.printStackTrace()
-            ArrayList()
+            log.error(e.message, e)
+            exitProcess(0)
         } finally {
             stat?.close()
             conn?.close()
@@ -123,7 +123,7 @@ class KtormGen {
         val writer = when {
             File(path).createNewFile() -> FileWriter(path)
             else -> {
-                log.info("The file already exists and its contents will be overwritten")
+                log.info("The file already exists and will be overwritten")
                 FileWriter(path, false)
             }
         }
@@ -144,36 +144,28 @@ class KtormGen {
     }
 
     private fun genTableEntityName(): String {
-        return genTableName().plus("Do")
+        return genTableMapperName().plus("Do")
     }
 
     private fun genTableMapperName(): String {
-        return genTableName()
-    }
-
-    private fun genTableName(): String {
         val tableName = toCamelCase(TABLE_NAME)
         return tableName!!.substring(0, 1).toUpperCase() + tableName.substring(1)
     }
 
-    private fun toCamelCase(name: CharSequence?): String? {
 
-        if (null == name) {
-            return null
-        }
-        val name2 = name.toString()
+    private fun toCamelCase(name: String?): String? {
+        val name2 = name!!
         if (name2.contains("_")) {
             val sb = StringBuilder(name2.length)
             var upperCase = false
-            for (i in 0 until name2.length) {
-                val c = name2[i]
+            for (element in name2) {
                 when {
-                    c == '_' -> upperCase = true
+                    element == '_' -> upperCase = true
                     upperCase -> {
-                        sb.append(Character.toUpperCase(c))
+                        sb.append(Character.toUpperCase(element))
                         upperCase = false
                     }
-                    else -> sb.append(Character.toLowerCase(c))
+                    else -> sb.append(Character.toLowerCase(element))
                 }
             }
             return sb.toString()
@@ -182,6 +174,7 @@ class KtormGen {
         }
 
     }
+
 
     fun startGenerateCode() {
         val dbProperties = genDbProperties()
@@ -210,9 +203,7 @@ class KtormGen {
 
         @JvmStatic
         fun main(args: Array<String>) {
-
-            val ktormGen = KtormGen()
-            ktormGen.startGenerateCode()
+            KtormGen().startGenerateCode()
         }
     }
 }

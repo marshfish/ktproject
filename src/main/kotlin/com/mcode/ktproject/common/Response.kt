@@ -1,34 +1,24 @@
 package com.mcode.ktproject.common
 
-class Response<T> {
-    private var code: Int? = null
-    private var msg: String = ""
-    private var data: T? = null
-
-    constructor(code: Int?, msg: String) {
-        this.code = code
-        this.msg = msg
-    }
-
-    constructor(code: Int?, msg: String, data: T?) {
-        this.code = code
-        this.msg = msg
-        this.data = data
-    }
-
+class Response<T> private constructor(val code: Int?, val msg: String, val data: T?) {
     companion object {
-        private val SUCCESS = Response<Any>(0, "success")
+        private val SUCCESS = Response<Any>(200, "success", null)
 
-        fun <T> of(code: Int?, tip: String): Response<T> {
-            return Response(code, tip)
+        fun of(code: Int, tip: String): Response<*> {
+            return of(code, tip, null)
         }
 
         fun <T> of(data: T): Response<T> {
-            return Response(SUCCESS.code, SUCCESS.msg, data)
+            return of(SUCCESS.code, SUCCESS.msg, data)
         }
 
-        val instance: Response<*>
-            get() = SUCCESS
+        fun <T> of(code: Int?, tip: String, data: T): Response<T> {
+            return Response(code, tip, data)
+        }
+
+        fun instance(): Response<out Any> {
+            return SUCCESS
+        }
     }
 }
 
