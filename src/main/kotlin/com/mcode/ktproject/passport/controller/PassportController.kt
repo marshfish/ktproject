@@ -26,11 +26,12 @@ class PassportController {
 
     @PostMapping("login")
     fun doLogin(@RequestBody @Valid loginDto: Login): Response<*> {
-        return  Response.of(loginService.doLogin(loginDto))
+        return Response.of(loginService.doLogin(loginDto))
     }
+
     // user -> role -> permission
     @PostMapping("registe")
-    @AuthValid(["permission"])
+    @AuthValid(["permission1"])
     fun doRegister(@RequestBody @Valid loginDto: Login): Response<out Any> {
         SysUser.insert {
             it.name to loginDto.userName

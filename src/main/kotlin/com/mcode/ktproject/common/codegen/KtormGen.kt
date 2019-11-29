@@ -84,14 +84,10 @@ class KtormGen {
     }
 
     private fun genDbProperties(): List<FieldMetaData<String, String, String>> {
-        try {
-            Class.forName(DB.driver)
-        } catch (e: ClassNotFoundException) {
-            log.error(e.message, e)
-            exitProcess(0)
-        }
+        Class.forName(DB.driver)
         var conn: Connection? = null
         var stat: PreparedStatement? = null
+
         return try {
             conn = DriverManager.getConnection(DB.url, USER_NAME, PASSWORD)
             stat = conn.prepareStatement(DB.tableDesc)

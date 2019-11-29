@@ -1,5 +1,7 @@
 package com.mcode.ktproject.passport.dao
 
+import com.mcode.ktproject.passport.dao.SysUser.bindTo
+import com.mcode.ktproject.passport.dao.SysUser.primaryKey
 import me.liuwj.ktorm.entity.Entity
 import me.liuwj.ktorm.schema.*
 
@@ -29,4 +31,14 @@ interface SysUserDo : Entity<SysUserDo> {
 	var createTime: Long?
 	var updateTime: Long?
 	var lover: String?
+}
+class TestDo  {
+	lateinit var  name:String
+
+	lateinit var password :String
+	override fun toString(): String {
+		return "TestDo(name='$name', password='$password')"
+	}
+
+
 }
